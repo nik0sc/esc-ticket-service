@@ -18,4 +18,7 @@ router.put('/:ticketId(\\d+)',
         login.checkSessionToken,
         tickets.update);
 
+router.get('/byTeam/:teamId(\\d+)',
+        tickets.getAllByTeam);
+
 module.exports = router;

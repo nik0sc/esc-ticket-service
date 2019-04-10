@@ -73,6 +73,54 @@ exports.getAllByUser = async function (req, res) {
     }
 };
 
+exports.getAllByTeam = async function (req, res) {
+    const knex = req.app.locals.knex;
+
+    let team_id = req.params.teamId;
+
+    /*
+    if (typeof team_id !== 'string'
+            || team_id.match(/^\d+$/)) {
+        res.status(400).json({
+            error: 'Malformed team id'
+        });
+        return;
+    }
+    */
+
+    let query;
+
+    if (req.query.type === 'count') {
+        query = knex('tickets')
+            .count('id as count')
+            .where('assigned_team', team_id);
+    } else {
+        query = knex('tickets')
+        .select('tickets.id', 'tickets.title', 'tickets.message',
+            'tickets.open_time', 
+            'tickets.close_time', 'tickets.priority', 'tickets.severity',
+            'tickets.assigned_team', 'tickets.opener_user',
+            'users.username', 'users.long_name', 
+            'teams.team_name')
+        .join('users', 'tickets.opener_user', '=', 'users.id')
+        .join('teams', 'tickets.assigned_team', '=', 'teams.id')
+        .where('tickets.assigned_team', team_id);
+    }
+
+
+    console.log(query.toString());
+
+    try {
+        res.json(await query);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: 'Db error'
+        });
+        return;
+    }
+};
+
 exports.createNew = async function (req, res) {
     console.log('Creating new ticket');
 
@@ -120,5 +168,6 @@ exports.update = function (req, res) {
             + ' from user id ' + user_object_id);
 
     // Check that user is authorized to do this!
+    // Admins (user_type=2) or owners only
     knex('tickets').update();
 };
