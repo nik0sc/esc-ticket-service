@@ -2,10 +2,9 @@ const express = require('express');
 const app = express();
 const bodyparser = require('body-parser');
 
-const users_router = require('./routers/users');
 const tickets_router = require('./routers/tickets');
 const attachments_router = require('./routers/attachments');
-const teams_router = require('./routers/teams');
+const common = require('./middleware/common');
 
 app.use(bodyparser.json());
 
@@ -26,31 +25,20 @@ app.locals.acn_axios = require('axios').create({
     }
 });
 
-// Allow XHR from some places only
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Parse-Session-Token, X-Requested-With, Content-Type');
-    res.header('Vary', 'Origin');
+if (typeof process.env.USER_SERVICE_BASE_URL === 'undefined') {
+    console.error('USER_SERVICE_BASE_URL is not in environment');
+} 
 
-    const allowed_origins = [
-        /^http:\/\/localhost(:\d+)*$/,
-        /^https:\/\/(frontend.)?ticket.lepak.sg$/
-    ];
-
-    const origin = req.header('Origin');
-
-    if (typeof origin !== 'undefined') {
-        if (allowed_origins.some((regexp) => origin.match(regexp))) {
-            res.header('Access-Control-Allow-Origin', origin);
-            console.log(`Origin: ${origin} is allowed`);
-        } else {
-            console.log(`Disallowed origin: ${origin}`);
-        }
-    } else {
-        console.log('No origin');
+app.locals.user_axios = require('axios').create({
+    baseURL: process.env.USER_SERVICE_BASE_URL,
+    timeout: 3000,
+    headers: {
+        'Content-Type': 'application/json'
     }
-
-    next();
 });
+
+// Allow XHR from some places only
+app.use(common.xhrAllowWhitelistOrigins);
 
 function info(req, res) {
     res.json({
@@ -63,10 +51,8 @@ function info(req, res) {
 app.get('/', info);
 app.get('/version', info);
 
-app.use('/user', users_router);
 app.use('/ticket', tickets_router);
 app.use('/attachment', attachments_router);
-app.use('/team', teams_router);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}!`);
