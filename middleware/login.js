@@ -70,34 +70,33 @@ exports.userIsAdmin = async function (req, res, next) {
     }
 
     let user_object_id = req.acn_session.user.objectId;
-    const knex = req.app.locals.knex;
-    
-    let query = knex('users')
-    .first('users.id', 'users.username', 'users.acn_id', 'users.user_type')
-    .where('users.acn_id', user_object_id);
+    const user_axios = req.app.locals.user_axios;
 
-    console.log(query.toString());
-
-    let row;
+    let res2;
     try {
-        row = await query;
+        res2 = await user_axios.get(`/user/acn:${user_object_id}/public`);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            error: 'Db error'
-        });
+        if (err.response && err.response.status === 404) {
+            res.status(404).json({
+                error: 'User not found'
+            });
+        } else {
+            console.error(err);
+            res.status(500).json({
+                error: 'Db error'
+            });
+        }
         return;
     }
     
-    console.log(`${row.id}:${row.username}:${row.user_type}`);
-
-    if (row.user_type !== 2) {
+    if (res2.user_type !== 2) {
         res.status(403).json({
             error: 'Only an admin can perform this action'
         });
         return;
     } 
 
+    // Ok, all is well
     if (typeof next === 'function') {
         next();
     }
