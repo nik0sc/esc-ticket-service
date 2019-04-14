@@ -89,7 +89,7 @@ exports.userIsAdmin = async function (req, res, next) {
         return;
     }
     
-    if (res2.user_type !== 2) {
+    if (res2.data.user_type !== 2) {
         res.status(403).json({
             error: 'Only an admin can perform this action'
         });
