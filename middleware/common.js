@@ -20,5 +20,24 @@ exports.xhrAllowWhitelistOrigins = function (req, res, next) {
         console.log('No origin');
     }
 
-    next();
+    if (typeof next === 'function') {
+        next();
+    }
+};
+
+const {validationResult} = require('express-validator/check');
+
+exports.failOnInvalid = function (req, res, next) {
+    let result = validationResult(req);
+
+    if (!result.isEmpty()) {
+        res.status(400).json({
+            validation_errors: result.mapped()
+        });
+        return;
+    }
+
+    if (typeof next === 'function') {
+        next();
+    }
 };
