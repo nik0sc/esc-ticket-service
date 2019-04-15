@@ -83,7 +83,8 @@ exports.userIsAdmin = async function (req, res, next) {
         } else {
             console.error(err);
             res.status(500).json({
-                error: 'Db error'
+                error: 'Error while connecting to user service',
+                response: err.response
             });
         }
         return;
@@ -95,6 +96,8 @@ exports.userIsAdmin = async function (req, res, next) {
         });
         return;
     } 
+
+    req.user_public_profile = res2.data;
 
     // Ok, all is well
     if (typeof next === 'function') {
