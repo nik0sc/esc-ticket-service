@@ -124,7 +124,7 @@
 			"response": []
 		},
 		{
-			"name": "Update Ticket with Attachment",
+			"name": "Update Ticket Protected Fields",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -152,20 +152,21 @@
 					}
 				],
 				"body": {
-					"mode": "file",
-					"file": {}
+					"mode": "raw",
+					"raw": "{\n\t\"priority\": 1,\n\t\"severity\": 1,\n\t\"status_flag\": 1\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/ticket/{{ticketId}}/attachment",
+					"raw": "{{baseUrl}}/ticket/{{ticketId}}/protected",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"ticket",
 						"{{ticketId}}",
-						"attachment"
+						"protected"
 					]
-				}
+				},
+				"description": "Only admin can call this"
 			},
 			"response": []
 		},
@@ -303,9 +304,9 @@
 	],
 	"variable": [
 		{
-			"id": "60b36243-b3fc-425b-a51a-d5cd7e6462d5",
+			"id": "8bb1542f-d1dc-4963-8992-b8ebd77aaa33",
 			"key": "baseUrl",
-			"value": "https://esc-ticket-service.lepak.sg",
+			"value": "https://ticket-service.ticket.lepak.sg",
 			"type": "string"
 		}
 	]

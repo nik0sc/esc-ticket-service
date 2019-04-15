@@ -35,9 +35,34 @@ router.post('/',
             .isString().trim().isLength({min: 1}),
         common.failOnInvalid,
         tickets.createNew);
-
-router.put('/:ticketId(\\d+)', 
+    
+router.put('/:ticketId(\\d+)',
         login.checkSessionToken,
+        body('message', 'Message cannot be empty')
+            .isString().trim().isLength({min: 1}), 
+        common.failOnInvalid,
+        tickets.updateOwner);
+
+router.put('/:ticketId(\\d+)/protected', 
+        login.checkSessionToken,
+        login.userIsAdmin,
+        body('title', 'Title cannot be empty')
+            .isString().trim().isLength({min: 1}),
+        body('message', 'Message cannot be empty')
+            .isString().trim().isLength({min: 1}), 
+        body('response', 'Response cannot be empty').optional()
+            .isString().trim().isLength({min: 1}),
+        body('close_time', 'Invalid close_time').optional()
+            .matches(/^\S+$/),
+        body('priority', 'Invalid priority').optional()
+            .isNumeric({no_symbols: true}),
+        body('severity', 'Invalid severity').optional()
+            .isNumeric({no_symbols: true}),
+        body('assigned_team', 'Invalid assigned_team').optional()
+            .isNumeric({no_symbols: true}),
+        body('status_flag', 'Invalid status_flag').optional()
+            .isNumeric({no_symbols: true}),
+        common.failOnInvalid,
         tickets.updateProtected);
 
 module.exports = router;

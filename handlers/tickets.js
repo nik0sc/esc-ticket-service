@@ -391,13 +391,19 @@ exports.createNew = async function (req, res) {
 };
 
 /**
- * Update an existing ticket (attachments uploaded separately)
+ * Update the protected fields of an existing ticket (attachments uploaded
+ * separately)
  * 
  * In: JSON
  * {
  *  "title": <String> [optional],
  *  "message": <String> [optional],
- *  "response": <String> [optional]
+ *  "response": <String> [optional],
+ *  "close_time": <String> [optional],
+ *  "priority": <Integer> [optional],
+ *  "severity": <Integer> [optional],
+ *  "assigned_team": <Integer> [optional],
+ *  "status_flag": <Integer> [optional]
  * }
  * 
  * Out:
@@ -407,18 +413,33 @@ exports.createNew = async function (req, res) {
  * }
  *  Failure: JSON; status != 200
  * {
- *  "error": <String>
+ *  "error": <String>, [and/or]
+ *  "validation_errors": 
+ *  {
+ *   <field_name>: 
+ *   {
+ *    "name": <String>,
+ *      
+ *   }
+ *  }, ...
  * }
  * 
  * Preconditions:
  * - User is authenticated with session token
+ * - User is admin 
  * - Title is string and not empty/whitespace
  * - Message is string and not empty/whitespace
+ * - Response is string and not empty/whitespace
+ * - Close time is string and matches timestamp format
+ * - Priority is integer
+ * - Severity is integer
+ * - Assigned team is integer
+ * - Status flag is integer
  * 
  * Postconditions:
- * - Ticket is inserted into database
- * - Ticket is associated with this user; only the owner and admins can see it
+ * - Ticket is updated in database
  * - Other tickets are not affected
+ * - Idempotent
  */
 exports.updateProtected = async function (req, res) {
     let ticket_id = req.params.ticketId;
@@ -458,7 +479,7 @@ exports.updateProtected = async function (req, res) {
         try {
             let res2 = user_axios.get(`/user/acn:${user_object_id}/public`);
 
-            if (res2.is_admin === false) {
+            if (res2.data.is_admin === false) {
                 res.status(403).json({
                     error: 'You are not authorized to update this ticket'
                 });
@@ -473,8 +494,51 @@ exports.updateProtected = async function (req, res) {
     }
 
     // All checks are ok, update the ticket
+    // Whitelist only
+    let update_fields = ['title', 'message', 'response', 'close_time',
+            'priority', 'severity', 'assigned_team', 'status_flag'];
+    let update_object = {};
 
-    let update = {};
-    // Validate 
+    for (field_name in update_fields) {
+        if (typeof req.body[field_name] !== 'undefined') {
+            update_object[field_name] = req.body[field_name];
+        }
+    }
+    
+    let update_query = knex('tickets')
+        .update(update_object)
+        .where('id', ticket_id)
+        .limit(1);
+    
+    console.log(update_query.toString());
 
+    let rows_updated;
+    try {
+        rows_updated = await update_query;
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: 'Database error while updating ticket',
+            ex: err.toString()
+        });
+        return;
+    }
+
+    if (rows_updated === 0) {
+        res.status(404).json({
+            error: 'Ticket not found'
+        });
+    } else if (rows_updated === 1) {
+        res.end();
+    } else {
+        res.status(500).json({
+            error: 'Unexpected rows_updated value',
+            rows_updated: rows_updated,
+            typeof: typeof rows_updated
+        });
+    }
 };
+
+exports.updateOwner = async function (req, res) {
+    res.status(501).end();
+}
