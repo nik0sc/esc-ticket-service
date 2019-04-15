@@ -21,6 +21,9 @@ create table tickets (
     -- There used to be foreign key constraints here. What happened??
 );
 
+create index idx_tickets_opener_user on tickets (opener_user);
+create index idx_tickets_assigned_team on tickets (assigned_team);
+
 create table attachments (
 	id integer primary key auto_increment,
     title varchar(100) not null,
