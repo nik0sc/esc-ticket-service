@@ -156,7 +156,8 @@ exports.getById = async function (req, res) {
     if (row.opener_user !== user_object_id) {
         // Check current user for admin status
         try {
-            let res2 = user_axios.get(`/user/acn:${user_object_id}/public`);
+            let res2 = await user_axios.get(
+                    `/user/acn:${user_object_id}/public`);
 
             if (res2.data.is_admin === false) {
                 res.status(403).json({
@@ -165,6 +166,7 @@ exports.getById = async function (req, res) {
                 return;
             }
         } catch (err) {
+            console.error(err);
             res.status(500).json({
                 error: 'Could not verify user with user service'
             });
