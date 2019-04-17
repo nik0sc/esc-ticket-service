@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 /**
  * Get all tickets
  * 
@@ -508,12 +510,13 @@ exports.updateProtected = async function (req, res) {
     // Whitelist only
     let update_fields = ['title', 'message', 'response', 'close_time',
             'priority', 'severity', 'assigned_team', 'status_flag'];
-    let update_object = {};
+    let update_object = _.pick(req.body, update_fields);
 
-    for (const field_name of update_fields) {
-        if (typeof req.body[field_name] !== 'undefined') {
-            update_object[field_name] = req.body[field_name];
-        }
+    if (_.isEmpty(update_object)) {
+        res.status(400).json({
+            error: 'No valid updatable fields were specified'
+        });
+        return;
     }
     
     let update_query = knex('tickets')

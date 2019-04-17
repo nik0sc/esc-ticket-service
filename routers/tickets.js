@@ -42,7 +42,7 @@ router.post('/',
     
 router.put('/:ticketId(\\d+)',
         login.checkSessionToken,
-        body('message', 'Message cannot be empty')
+        body('message', 'Message cannot be empty').optional()
             .isString().trim().isLength({min: 1}), 
         common.failOnInvalid,
         tickets.updateOwner);
@@ -57,7 +57,8 @@ router.put('/:ticketId(\\d+)/protected',
         body('response', 'Response cannot be empty').optional()
             .isString().trim().isLength({min: 1}),
         body('close_time', 'Invalid close_time').optional()
-            .matches(/^\S+$/),
+            // .matches(/^\S+$/),
+            .matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/),
         body('priority', 'Invalid priority').optional()
             .isNumeric({no_symbols: true}),
         body('severity', 'Invalid severity').optional()
