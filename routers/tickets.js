@@ -33,6 +33,10 @@ router.post('/',
             .isString().trim().isLength({min: 1}),
         body('message', 'Message cannot be empty')
             .isString().trim().isLength({min: 1}),
+        body('priority', 'Invalid priority').optional()
+            .isNumeric({no_symbols: true}),
+        body('severity', 'Invalid severity').optional()
+            .isNumeric({no_symbols: true}),
         common.failOnInvalid,
         tickets.createNew);
     
@@ -46,9 +50,9 @@ router.put('/:ticketId(\\d+)',
 router.put('/:ticketId(\\d+)/protected', 
         login.checkSessionToken,
         login.userIsAdmin,
-        body('title', 'Title cannot be empty')
+        body('title', 'Title cannot be empty').optional()
             .isString().trim().isLength({min: 1}),
-        body('message', 'Message cannot be empty')
+        body('message', 'Message cannot be empty').optional()
             .isString().trim().isLength({min: 1}), 
         body('response', 'Response cannot be empty').optional()
             .isString().trim().isLength({min: 1}),

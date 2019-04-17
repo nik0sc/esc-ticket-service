@@ -365,12 +365,20 @@ exports.createNew = async function (req, res) {
     //     return;
     // }
 
+    let t_priority = (typeof req.body.priority !== 'undefined')
+            ? parseInt(req.body.priority) : 0;
+    
+    let t_severity = (typeof req.body.severity !== 'undefined')
+            ? parseInt(req.body.severity) : 0;
+
     let query = knex('tickets').insert({
         // Validated in router by express-validator
         title: req.body.title,
         message: req.body.message,
         open_time: knex.fn.now(),
-        opener_user: user_object_id
+        opener_user: user_object_id,
+        priority: t_priority,
+        severity: t_severity
     });
 
     console.log(query.toString());
@@ -479,7 +487,8 @@ exports.updateProtected = async function (req, res) {
     if (query_ownership_row.opener_user !== user_object_id) {
         // Check admin status
         try {
-            let res2 = user_axios.get(`/user/acn:${user_object_id}/public`);
+            let res2 = await user_axios.get(
+                `/user/acn:${user_object_id}/public`);
 
             if (res2.data.is_admin === false) {
                 res.status(403).json({
@@ -501,7 +510,7 @@ exports.updateProtected = async function (req, res) {
             'priority', 'severity', 'assigned_team', 'status_flag'];
     let update_object = {};
 
-    for (field_name in update_fields) {
+    for (const field_name of update_fields) {
         if (typeof req.body[field_name] !== 'undefined') {
             update_object[field_name] = req.body[field_name];
         }
