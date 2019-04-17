@@ -2,6 +2,7 @@ const router = require('express').Router();
 const {check, query, body} = require('express-validator/check');
 
 const tickets = require('../handlers/tickets');
+const get_tickets = require('../handlers/get_tickets');
 const login = require('../middleware/login');
 const common = require('../middleware/common');
 
@@ -10,22 +11,22 @@ router.get('/',
         login.userIsAdmin,
         query('limit').optional().toInt(),
         query('offset').optional().toInt(),
-        tickets.getAll);
+        get_tickets.getAll);
 
 router.get('/:ticketId(\\d+)',
         login.checkSessionToken,
-        tickets.getById);
+        get_tickets.getById);
 
 router.get('/byUser', 
         login.checkSessionToken, 
         query('limit').optional().toInt(),
         query('offset').optional().toInt(),
-        tickets.getAllByUser);
+        get_tickets.getAllByUser);
 
 router.get('/byTeam/:teamId(\\d+)',
         query('limit').optional().toInt(),
         query('offset').optional().toInt(),
-        tickets.getAllByTeam);
+        get_tickets.getAllByTeam);
 
 router.post('/', 
         login.checkSessionToken, 
