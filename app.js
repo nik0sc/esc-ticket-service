@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyparser = require('body-parser');
+const cors = require('cors');
 
 const tickets_router = require('./routers/tickets');
 const attachments_router = require('./routers/attachments');
@@ -37,8 +38,15 @@ app.locals.user_axios = require('axios').create({
     }
 });
 
+app.use(cors({
+    origin: common.xhrOrigins
+}));
+app.options('*', (req, res) => {
+    res.end();
+});
+
 // Allow XHR from some places only
-app.use(common.xhrAllowWhitelistOrigins);
+// app.use(common.xhrAllowWhitelistOrigins);
 
 function info(req, res) {
     res.json({

@@ -25,6 +25,15 @@ exports.xhrAllowWhitelistOrigins = function (req, res, next) {
     }
 };
 
+exports.xhrOrigins = function (origin, callback) {
+    if (typeof origin === 'undefined' 
+            || allowed_origins.some((regexp) => origin.match(regexp))) {
+        callback(null, true);
+    } else {
+        callback(new Error('Not allowed by CORS'));
+    }
+};
+
 const {validationResult} = require('express-validator/check');
 
 exports.failOnInvalid = function (req, res, next) {
