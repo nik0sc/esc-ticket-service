@@ -140,7 +140,7 @@ exports.createNew = async function (req, res) {
  * 
  * Preconditions:
  * - User is authenticated with session token
- * - User is admin 
+ * - User is admin or owner
  * - Title is string and not empty/whitespace
  * - Message is string and not empty/whitespace
  * - Response is string and not empty/whitespace
@@ -256,5 +256,6 @@ exports.updateProtected = async function (req, res) {
 };
 
 exports.updateOwner = async function (req, res) {
+    
     res.status(501).end();
 }

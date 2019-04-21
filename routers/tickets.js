@@ -50,7 +50,7 @@ router.put('/:ticketId(\\d+)',
 
 router.put('/:ticketId(\\d+)/protected', 
         login.checkSessionToken,
-        login.userIsAdmin,
+        // login.userIsAdmin,
         body('title', 'Title cannot be empty').optional()
             .isString().trim().isLength({min: 1}),
         body('message', 'Message cannot be empty').optional()
